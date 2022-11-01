@@ -1,42 +1,41 @@
-import { Table, Button, Space } from "antd";
-import { useContext } from "react";
-import { useState } from "react";
+import { Table, Button, Space, Card } from "antd";
+import { useContext, useState, useCallback } from "react";
 import { stateContext, dispatchContext } from "../Contexts";
-import { addItem, deleteItem, editItem } from "../Actions";
+import { Popconfirm } from "antd";
+import {
+  sendDataAction,
+  sendEditedDataAction,
+  sendDeleteDataRequest,
+  getDataById,
+} from "../Actions";
 import CollectionCreateForm from "./CollectionCreateForm";
-import { useCallback } from "react";
 
 export default function Home() {
   const [open, setOpen] = useState(false);
-  const [record, setRecord] = useState(undefined);
+  const [record, setRecord] = useState(null);
+
   const state = useContext(stateContext);
   const dispatch = useContext(dispatchContext);
 
-  const onCreate = (values) => {
-    if (record) {
-      dispatch(editItem(values));
-      setRecord(undefined);
-    } else {
-      const length = state.dataSource.length;
-      values.id = state.dataSource[length - 1].id + 1;
+  const onCreate = async (values) => {
+    record
+      ? sendEditedDataAction({ ...values, id: record.id }, dispatch)
+      : sendDataAction(values, dispatch);
 
-      values.key = values.id.toString();
-      dispatch(addItem(values));
-    }
     setOpen(false);
   };
 
   const deleteData = (data) => {
-    dispatch(deleteItem(data.id));
+    sendDeleteDataRequest(data.id, dispatch);
   };
 
   const handleAddNewItem = useCallback(() => {
     setOpen(true);
   }, []);
 
-  const editData = (data) => {
-    handleAddNewItem();
-    setRecord(data);
+  const editData = async (data) => {
+    setOpen(true);
+    setRecord(await getDataById(data.id));
   };
 
   const columns = [
@@ -73,14 +72,17 @@ export default function Home() {
           >
             Edit
           </Button>
-          <Button
-            onClick={() => {
+          <Popconfirm
+            placement="top"
+            title="Are you sure?"
+            onConfirm={() => {
               deleteData(record);
             }}
-            danger
+            okText="Yes"
+            cancelText="No"
           >
-            Delete
-          </Button>
+            <Button danger>Delete</Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -88,15 +90,6 @@ export default function Home() {
 
   return (
     <div className="Home-div">
-      <div className="Home-add-btn-div">
-        <Button
-          type="primary"
-          className="add-new-btn"
-          onClick={handleAddNewItem}
-        >
-          Add new
-        </Button>
-      </div>
       <CollectionCreateForm
         record={record}
         open={open}
@@ -105,7 +98,20 @@ export default function Home() {
           setOpen(false);
         }}
       />
-      <Table dataSource={state.dataSource} columns={columns} />
+      <Card
+        title="Users Information"
+        extra={
+          <Button
+            type="primary"
+            className="add-new-btn"
+            onClick={handleAddNewItem}
+          >
+            Add new
+          </Button>
+        }
+      >
+        <Table dataSource={state.dataSource} columns={columns} />
+      </Card>
     </div>
   );
 }

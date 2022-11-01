@@ -1,17 +1,18 @@
-import { useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import Home from "./pages/Home";
-import { addItemReducer } from "./Reducers/Reducer";
+import { itemsReducer } from "./Reducers/Reducer";
+import { initializeState } from "./Actions";
 import { dispatchContext, stateContext } from "./Contexts";
 
 import "./App.css";
+import axios from "axios";
 
 const initialState = {
   dataSource: [],
 };
 
-function App() {
-  const [state, dispatch] = useReducer(addItemReducer, initialState, () => {
-    return {
+/*
+return {
       dataSource: [
         {
           id: 0,
@@ -31,7 +32,26 @@ function App() {
         },
       ],
     };
-  });
+*/
+
+function App() {
+  const [state, dispatch] = useReducer(itemsReducer, initialState);
+
+  useEffect(() => {
+    (async () => {
+      await axios
+        .get("http://localhost:8000/users")
+        .then((res) => {
+          const data = res.data.map((v) => {
+            const obj = { ...v };
+            obj.key = obj.id.toString();
+            return obj;
+          });
+          dispatch(initializeState(data));
+        })
+        .catch((err) => console.error(err));
+    })();
+  }, []);
 
   // console.log("State is: ", state);
   return (

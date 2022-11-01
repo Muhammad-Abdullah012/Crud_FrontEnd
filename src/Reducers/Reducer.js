@@ -1,8 +1,16 @@
-import { ADD_ITEM, DELETE_ITEM, EDIT_ITEM } from "../Constants";
+import {
+  ADD_ITEM,
+  DELETE_ITEM,
+  EDIT_ITEM,
+  INITIALIZE_STATE,
+} from "../Constants";
 
-export const addItemReducer = (state, action) => {
+export const itemsReducer = (state, action) => {
   let dataSource;
   switch (action.type) {
+    case INITIALIZE_STATE:
+      dataSource = action.payload;
+      return { ...state, dataSource };
     case ADD_ITEM:
       dataSource = [...state.dataSource, action.payload];
       return { ...state, dataSource };

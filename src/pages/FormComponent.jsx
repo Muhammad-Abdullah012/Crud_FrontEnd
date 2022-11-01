@@ -12,9 +12,9 @@ export default function FormComponent(props) {
   return (
     <div>
       <Form {...layout} form={props.form} name="control-hooks">
-        <Form.Item name="id" hidden>
+        {/* <Form.Item name="id" hidden>
           <Input hidden />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           name="name"
           label="Name"
