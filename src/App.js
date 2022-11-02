@@ -1,43 +1,22 @@
 import { useEffect, useReducer } from "react";
 import Home from "./pages/Home";
 import { itemsReducer } from "./Reducers/Reducer";
-import { initializeState } from "./Actions";
+import { dataLoaded, loadingData, setDataSource } from "./Actions";
 import { dispatchContext, stateContext } from "./Contexts";
-
-import "./App.css";
 import axios from "axios";
+import "./App.css";
 
 const initialState = {
+  isLoading: false,
   dataSource: [],
+  filteredData: [],
 };
-
-/*
-return {
-      dataSource: [
-        {
-          id: 0,
-          key: "0",
-          name: "Henry",
-          age: 33,
-          profession: "Student",
-          address: "10 Downing Street",
-        },
-        {
-          id: 1,
-          key: "1",
-          name: "John",
-          age: 42,
-          profession: "Teacher",
-          address: "10 Downing Street",
-        },
-      ],
-    };
-*/
 
 function App() {
   const [state, dispatch] = useReducer(itemsReducer, initialState);
 
   useEffect(() => {
+    dispatch(loadingData());
     (async () => {
       await axios
         .get("http://localhost:8000/users")
@@ -45,9 +24,10 @@ function App() {
           const data = res.data.map((v) => {
             const obj = { ...v };
             obj.key = obj.id.toString();
+            dispatch(dataLoaded());
             return obj;
           });
-          dispatch(initializeState(data));
+          dispatch(setDataSource(data));
         })
         .catch((err) => console.error(err));
     })();

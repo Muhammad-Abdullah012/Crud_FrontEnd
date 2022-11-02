@@ -1,18 +1,23 @@
-import { Table, Button, Space, Card } from "antd";
+import { Table, Button, Space, Card, Tooltip, Input } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { useContext, useState, useCallback } from "react";
+import { debounce } from "lodash";
 import { stateContext, dispatchContext } from "../Contexts";
-import { Popconfirm } from "antd";
 import {
+  filterData,
+  openNotification,
   sendDataAction,
   sendEditedDataAction,
-  sendDeleteDataRequest,
-  getDataById,
 } from "../Actions";
 import CollectionCreateForm from "./CollectionCreateForm";
+import { EditAndDeleteBtns } from "../components/EditAndDeleteBtns";
+import axios from "axios";
+const { Search } = Input;
 
 export default function Home() {
   const [open, setOpen] = useState(false);
   const [record, setRecord] = useState(null);
+  const [filter, setFilter] = useState(false);
 
   const state = useContext(stateContext);
   const dispatch = useContext(dispatchContext);
@@ -25,18 +30,9 @@ export default function Home() {
     setOpen(false);
   };
 
-  const deleteData = (data) => {
-    sendDeleteDataRequest(data.id, dispatch);
-  };
-
   const handleAddNewItem = useCallback(() => {
     setOpen(true);
   }, []);
-
-  const editData = async (data) => {
-    setOpen(true);
-    setRecord(await getDataById(data.id));
-  };
 
   const columns = [
     {
@@ -64,29 +60,33 @@ export default function Home() {
       key: "actions",
       dataIndex: "actions",
       render: (_, record) => (
-        <Space size="middle">
-          <Button
-            onClick={() => {
-              editData(record);
-            }}
-          >
-            Edit
-          </Button>
-          <Popconfirm
-            placement="top"
-            title="Are you sure?"
-            onConfirm={() => {
-              deleteData(record);
-            }}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button danger>Delete</Button>
-          </Popconfirm>
-        </Space>
+        <EditAndDeleteBtns props={{ record, setOpen, setRecord }} />
       ),
     },
   ];
+
+  const onSearch = async (value) => {
+    value.length > 0 ? setFilter(true) : setFilter(false);
+    await axios
+      .get(`http://localhost:8000/raw/user`, {
+        params: {
+          searchString: value,
+        },
+      })
+      .then((res) => {
+        const data = res.data.map((v) => {
+          const obj = { ...v };
+          obj.key = obj.id;
+          return obj;
+        });
+        dispatch(filterData(data));
+      })
+      .catch((err) => {
+        openNotification("error", "Error", "Error Occured searching data!");
+      });
+  };
+
+  const debouncedSearch = debounce(onSearch, 500);
 
   return (
     <div className="Home-div">
@@ -100,17 +100,37 @@ export default function Home() {
       />
       <Card
         title="Users Information"
+        loading={state.isLoading}
+        bordered={false}
         extra={
-          <Button
-            type="primary"
-            className="add-new-btn"
-            onClick={handleAddNewItem}
-          >
-            Add new
-          </Button>
+          <>
+            <Space size="middle">
+              <Tooltip title="Search">
+                <Search
+                  placeholder="Search User info"
+                  onChange={(e) => debouncedSearch(e.target.value)}
+                  onSearch={onSearch}
+                  style={{
+                    width: 200,
+                  }}
+                />
+              </Tooltip>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                className="add-new-btn"
+                onClick={handleAddNewItem}
+              >
+                Add new
+              </Button>
+            </Space>
+          </>
         }
       >
-        <Table dataSource={state.dataSource} columns={columns} />
+        <Table
+          dataSource={filter ? state.filteredData : state.dataSource}
+          columns={columns}
+        />
       </Card>
     </div>
   );

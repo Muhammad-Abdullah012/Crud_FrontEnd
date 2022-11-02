@@ -5,6 +5,9 @@ import {
   DELETE_ITEM,
   EDIT_ITEM,
   INITIALIZE_STATE,
+  FILTERED_DATA,
+  LOADING_DATA,
+  DATA_LOADED,
 } from "./Constants";
 
 export const openNotification = (type, title, desc) => {
@@ -15,7 +18,7 @@ export const openNotification = (type, title, desc) => {
   });
 };
 
-export const initializeState = (arr) => {
+export const setDataSource = (arr) => {
   return {
     type: INITIALIZE_STATE,
     payload: arr,
@@ -24,7 +27,7 @@ export const initializeState = (arr) => {
 
 export const sendDataAction = async (data, dispatch) => {
   await axios
-    .post("http://localhost:8000/user", data)
+    .post("http://localhost:8000/raw/user", data)
     .then((res) => {
       openNotification(
         "success",
@@ -35,21 +38,35 @@ export const sendDataAction = async (data, dispatch) => {
       data.key = data.id;
       dispatch(addItem(data));
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      openNotification(
+        "error",
+        "Error Occured",
+        "An Error occured while creating user!"
+      );
+      console.error(err);
+    });
 };
 
 export const getDataById = async (id) => {
   return await axios
-    .get(`http://localhost:8000/user/${id}`)
+    .get(`http://localhost:8000/raw/user/${id}`)
     .then((res) => {
       return res.data;
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      openNotification(
+        "error",
+        "Error Occured",
+        "An Error occured while fetching data!"
+      );
+      console.error(err);
+    });
 };
 
 export const sendEditedDataAction = async (data, dispatch) => {
   await axios
-    .put("http://localhost:8000/user", data)
+    .put("http://localhost:8000/raw/user", data)
     .then((res) => {
       openNotification(
         "success",
@@ -61,12 +78,19 @@ export const sendEditedDataAction = async (data, dispatch) => {
       console.log(res.data);
       dispatch(editItem(data));
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      openNotification(
+        "error",
+        "Error Occured",
+        "An Error occured while editing!"
+      );
+      console.error(err);
+    });
 };
 
 export const sendDeleteDataRequest = async (id, dispatch) => {
   await axios
-    .delete(`http://localhost:8000/user/${id}`)
+    .delete(`http://localhost:8000/raw/user/${id}`)
     .then((res) => {
       openNotification(
         "success",
@@ -76,6 +100,11 @@ export const sendDeleteDataRequest = async (id, dispatch) => {
       dispatch(deleteItem(id));
     })
     .catch((err) => {
+      openNotification(
+        "error",
+        "Error Occured",
+        "An Error occured while deleting!"
+      );
       console.error(err);
     });
 };
@@ -98,5 +127,24 @@ export const editItem = (item) => {
   return {
     type: EDIT_ITEM,
     payload: item,
+  };
+};
+
+export const loadingData = () => {
+  return {
+    type: LOADING_DATA,
+  };
+};
+
+export const dataLoaded = () => {
+  return {
+    type: DATA_LOADED,
+  };
+};
+
+export const filterData = (data) => {
+  return {
+    type: FILTERED_DATA,
+    payload: data,
   };
 };

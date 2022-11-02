@@ -1,8 +1,11 @@
 import {
   ADD_ITEM,
+  DATA_LOADED,
   DELETE_ITEM,
   EDIT_ITEM,
+  FILTERED_DATA,
   INITIALIZE_STATE,
+  LOADING_DATA,
 } from "../Constants";
 
 export const itemsReducer = (state, action) => {
@@ -26,6 +29,12 @@ export const itemsReducer = (state, action) => {
       );
       dataSource[idx] = { ...action.payload, key: action.payload.id };
       return { ...state, dataSource };
+    case FILTERED_DATA:
+      return { ...state, filteredData: action.payload };
+    case LOADING_DATA:
+      return { ...state, isLoading: true };
+    case DATA_LOADED:
+      return { ...state, isLoading: false };
     default:
       return state;
   }
