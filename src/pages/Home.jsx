@@ -22,16 +22,17 @@ export default function Home() {
   const state = useContext(stateContext);
   const dispatch = useContext(dispatchContext);
 
+  const clearHomeState = useCallback((record) => {
+    if (record) setRecord(null);
+    setOpen(false);
+  }, []);
+
   const onCreate = async (values) => {
     record
-      ? sendEditedDataAction({ ...values, id: record.id }, dispatch).then(
-          () => {
-            setRecord(null);
-          }
+      ? sendEditedDataAction({ ...values, id: record.id }, dispatch).then(() =>
+          clearHomeState(record)
         )
-      : sendDataAction(values, dispatch);
-
-    setOpen(false);
+      : sendDataAction(values, dispatch).then(() => clearHomeState(record));
   };
 
   const handleAddNewItem = useCallback(() => {
@@ -91,17 +92,13 @@ export default function Home() {
   };
 
   const debouncedSearch = debounce(onSearch, 500);
-  console.log("Record is: ", record);
   return (
     <div className="Home-div">
       <CollectionCreateForm
         record={record}
         open={open}
         onCreate={onCreate}
-        onCancel={() => {
-          if (record) setRecord(null);
-          setOpen(false);
-        }}
+        onCancel={() => clearHomeState(record)}
       />
       <Card
         title="Users Information"
