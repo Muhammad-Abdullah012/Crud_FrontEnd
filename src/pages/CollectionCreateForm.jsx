@@ -41,7 +41,7 @@ export default function CollectionCreateForm({
       <Modal
         open={open}
         title="Enter Data"
-        okText="Add"
+        okText={record ? "Confirm" : "Add"}
         cancelText="Cancel"
         destroyOnClose
         onCancel={cancel}

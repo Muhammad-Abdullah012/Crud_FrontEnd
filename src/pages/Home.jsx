@@ -24,7 +24,11 @@ export default function Home() {
 
   const onCreate = async (values) => {
     record
-      ? sendEditedDataAction({ ...values, id: record.id }, dispatch)
+      ? sendEditedDataAction({ ...values, id: record.id }, dispatch).then(
+          () => {
+            setRecord(null);
+          }
+        )
       : sendDataAction(values, dispatch);
 
     setOpen(false);
@@ -87,7 +91,7 @@ export default function Home() {
   };
 
   const debouncedSearch = debounce(onSearch, 500);
-
+  console.log("Record is: ", record);
   return (
     <div className="Home-div">
       <CollectionCreateForm
@@ -95,6 +99,7 @@ export default function Home() {
         open={open}
         onCreate={onCreate}
         onCancel={() => {
+          if (record) setRecord(null);
           setOpen(false);
         }}
       />
