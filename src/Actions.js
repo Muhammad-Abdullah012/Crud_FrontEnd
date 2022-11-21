@@ -8,6 +8,18 @@ import {
   FILTERED_DATA,
   LOADING_DATA,
   DATA_LOADED,
+  BASE_URL,
+  INITIALIZE_ORGANIZATIONS,
+  ADD_ORGANIZATION,
+  USERS_PATH,
+  ORGANIZATIONS_PATH,
+  EDIT_ORGANIZATION,
+  DELETE_ORGANIZATION,
+  INITIALIZE_ORDERS,
+  ORDERS_PATH,
+  EDIT_ORDER,
+  DELETE_ORDER,
+  ADD_ORDER,
 } from "./Constants";
 
 export const openNotification = (type, title, desc) => {
@@ -24,10 +36,22 @@ export const setDataSource = (arr) => {
     payload: arr,
   };
 };
+export const setOrganizations = (arr) => {
+  return {
+    type: INITIALIZE_ORGANIZATIONS,
+    payload: arr,
+  };
+};
+export const setOrders = (arr) => {
+  return {
+    type: INITIALIZE_ORDERS,
+    payload: arr,
+  };
+};
 
-export const sendDataAction = async (data, dispatch) => {
+export const sendDataAction = async (data, dispatch, path) => {
   await axios
-    .post("http://localhost:8000/raw/user", data)
+    .post(`${BASE_URL}${path}`, data)
     .then((res) => {
       openNotification(
         "success",
@@ -36,7 +60,19 @@ export const sendDataAction = async (data, dispatch) => {
       );
       const data = { ...res.data };
       data.key = data.id;
-      dispatch(addItem(data));
+      switch (path) {
+        case USERS_PATH:
+          dispatch(addItem(data));
+          break;
+        case ORGANIZATIONS_PATH:
+          dispatch(addOrg(data));
+          break;
+        case ORDERS_PATH:
+          dispatch(addOrder(data));
+          break;
+        default:
+          break;
+      }
     })
     .catch((err) => {
       openNotification(
@@ -48,9 +84,9 @@ export const sendDataAction = async (data, dispatch) => {
     });
 };
 
-export const getDataById = async (id) => {
+export const getDataById = async (id, path) => {
   return await axios
-    .get(`http://localhost:8000/raw/user/${id}`)
+    .get(`${BASE_URL}${path}/${id}`)
     .then((res) => {
       return res.data;
     })
@@ -64,19 +100,31 @@ export const getDataById = async (id) => {
     });
 };
 
-export const sendEditedDataAction = async (data, dispatch) => {
+export const sendEditedDataAction = async (data, dispatch, path) => {
   await axios
-    .put("http://localhost:8000/raw/user", data)
-    .then((res) => {
+    .put(`${BASE_URL}${path}`, data)
+    .then(async (res) => {
       openNotification(
         "success",
         "Record Edited",
         "Record was edited successfully"
       );
-      const data = { ...res.data };
-      data.key = data.id;
-      console.log(res.data);
-      dispatch(editItem(data));
+      const returnedData = { ...res.data };
+      returnedData.key = returnedData.id;
+      console.log("Data returned after editAction: ", res.data);
+      switch (path) {
+        case USERS_PATH:
+          dispatch(editItem(returnedData));
+          break;
+        case ORGANIZATIONS_PATH:
+          dispatch(editOrg(returnedData));
+          break;
+        case ORDERS_PATH:
+          dispatch(editOrder(returnedData));
+          break;
+        default:
+          break;
+      }
     })
     .catch((err) => {
       openNotification(
@@ -88,16 +136,28 @@ export const sendEditedDataAction = async (data, dispatch) => {
     });
 };
 
-export const sendDeleteDataRequest = async (id, dispatch) => {
+export const sendDeleteDataRequest = async (id, dispatch, path) => {
   await axios
-    .delete(`http://localhost:8000/raw/user/${id}`)
+    .delete(`${BASE_URL}${path}/${id}`)
     .then((res) => {
       openNotification(
         "success",
         "Record Deleted",
         "Record was deleted successfully"
       );
-      dispatch(deleteItem(id));
+      switch (path) {
+        case USERS_PATH:
+          dispatch(deleteOrg(id));
+          break;
+        case ORGANIZATIONS_PATH:
+          dispatch(deleteOrg(id));
+          break;
+        case ORDERS_PATH:
+          dispatch(deleteOrder(id));
+          break;
+        default:
+          break;
+      }
     })
     .catch((err) => {
       openNotification(
@@ -116,10 +176,36 @@ export const addItem = (item) => {
   };
 };
 
-export const deleteItem = (key) => {
+export const addOrg = (org) => {
+  return {
+    type: ADD_ORGANIZATION,
+    payload: org,
+  };
+};
+
+export const addOrder = (order) => {
+  return {
+    type: ADD_ORDER,
+    payload: order,
+  };
+};
+
+export const deleteItem = (id) => {
   return {
     type: DELETE_ITEM,
-    payload: key,
+    payload: id,
+  };
+};
+export const deleteOrg = (id) => {
+  return {
+    type: DELETE_ORGANIZATION,
+    payload: id,
+  };
+};
+export const deleteOrder = (id) => {
+  return {
+    type: DELETE_ORDER,
+    payload: id,
   };
 };
 
@@ -127,6 +213,18 @@ export const editItem = (item) => {
   return {
     type: EDIT_ITEM,
     payload: item,
+  };
+};
+export const editOrg = (org) => {
+  return {
+    type: EDIT_ORGANIZATION,
+    payload: org,
+  };
+};
+export const editOrder = (order) => {
+  return {
+    type: EDIT_ORDER,
+    payload: order,
   };
 };
 

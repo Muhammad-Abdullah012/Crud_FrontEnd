@@ -1,4 +1,5 @@
-import { Form, Input, InputNumber } from "antd";
+import { Form, Input, InputNumber, Select } from "antd";
+
 const layout = {
   labelCol: {
     span: 8,
@@ -8,10 +9,10 @@ const layout = {
   },
 };
 
-export default function FormComponent(props) {
+export default function UsersForm({ form, record, orgs }) {
   return (
     <div>
-      <Form {...layout} form={props.form} name="control-hooks">
+      <Form {...layout} form={form} name="control-hooks">
         <Form.Item
           name="name"
           label="Name"
@@ -44,6 +45,18 @@ export default function FormComponent(props) {
           ]}
         >
           <Input />
+        </Form.Item>
+        <Form.Item
+          // name={record ? "org_name" : "org_id"}
+          name="org_id"
+          label="Organization"
+          rules={[
+            {
+              required: true,
+            },
+          ]}
+        >
+          <Select>{orgs}</Select>
         </Form.Item>
         <Form.Item name="profession" label="Profession">
           <Input />

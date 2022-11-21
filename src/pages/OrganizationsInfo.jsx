@@ -1,0 +1,130 @@
+import { useContext, useState, useEffect } from "react";
+import axios from "axios";
+import { Table, Card, Space, Tooltip, Button } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { dispatchContext, stateContext } from "../Contexts";
+import {
+  filterData,
+  openNotification,
+  setOrganizations,
+  dataLoaded,
+  loadingData,
+} from "../Actions";
+import { BASE_URL, ORGANIZATIONS_PATH } from "../Constants";
+import { EditAndDeleteBtns } from "../components/EditAndDeleteBtns";
+import { SearchBar } from "../components/Search";
+
+export default function OrganizationsInfo({
+  setRecord,
+  setOpen,
+  handleAddNewItem,
+}) {
+  const [filter, setFilter] = useState(false);
+  const dispatch = useContext(dispatchContext);
+  const state = useContext(stateContext);
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      dataIndex: "actions",
+      render: (_, record) => (
+        <EditAndDeleteBtns
+          props={{ record, setOpen, setRecord, path: ORGANIZATIONS_PATH }}
+        />
+      ),
+    },
+  ];
+
+  useEffect(() => {
+    dispatch(loadingData());
+    axios
+      .get(`${BASE_URL}${ORGANIZATIONS_PATH}`)
+      .then((res) => {
+        dispatch(dataLoaded());
+        if (res.data.length <= 0) {
+          dispatch(setOrganizations(res.data));
+          return;
+        }
+        const data = res.data.map((v) => {
+          const obj = { ...v };
+          obj.key = obj.id.toString();
+          return obj;
+        });
+        dispatch(setOrganizations(data));
+      })
+      .catch((err) => {
+        openNotification(
+          "error",
+          "Error Occured",
+          "An Error occured while fetching data!"
+        );
+        console.error(err);
+      });
+  }, []);
+
+  const onSearch = async (value) => {
+    value.length > 0 ? setFilter(true) : setFilter(false);
+    await axios
+      .get(`${BASE_URL}${ORGANIZATIONS_PATH}`, {
+        params: {
+          searchString: value,
+        },
+      })
+      .then((res) => {
+        const data = res.data.map((v) => {
+          const obj = { ...v };
+          obj.key = obj.id;
+          return obj;
+        });
+        dispatch(filterData(data));
+      })
+      .catch((err) => {
+        openNotification("error", "Error", "Error Occured searching data!");
+        console.log(err);
+      });
+  };
+
+  return (
+    <Card
+      title="Organizations Information"
+      loading={state.isLoading}
+      bordered={false}
+      extra={
+        <>
+          <Space size="middle">
+            <Tooltip title="Search">
+              <SearchBar
+                onSearch={onSearch}
+                placeholder="Search Organizations Info"
+              />
+            </Tooltip>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="add-new-btn"
+              onClick={handleAddNewItem}
+            >
+              Add new
+            </Button>
+          </Space>
+        </>
+      }
+    >
+      <Table
+        dataSource={filter ? state.filteredData : state.organizations}
+        columns={columns}
+      />
+    </Card>
+  );
+}

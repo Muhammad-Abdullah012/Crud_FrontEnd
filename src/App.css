@@ -1,5 +1,6 @@
 .App {
-  /* text-align: center; */
+  width: 100vw;
+  height: 100vh;
 }
 
 .App-logo {
@@ -37,9 +38,14 @@
   }
 }
 
-/* .Home-add-btn-div {
-  display: flex;
+.Home-div {
+  height: 100%;
 }
-.add-new-btn {
-  margin-left: auto;
-} */
+
+.building-icon {
+  color: #a6adb4;
+}
+
+.building-icon:hover {
+  color: white;
+}
