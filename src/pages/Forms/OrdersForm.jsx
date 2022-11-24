@@ -14,7 +14,6 @@ export default function OrdersForm({ users, record, form }) {
     <div>
       <Form {...layout} form={form} name="control-hooks">
         <Form.Item
-          // name={record ? "user_name" : "user_id"}
           name="user_id"
           label="User"
           rules={[

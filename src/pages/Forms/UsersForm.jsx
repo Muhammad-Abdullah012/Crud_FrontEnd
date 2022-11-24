@@ -47,7 +47,6 @@ export default function UsersForm({ form, record, orgs }) {
           <Input />
         </Form.Item>
         <Form.Item
-          // name={record ? "org_name" : "org_id"}
           name="org_id"
           label="Organization"
           rules={[
