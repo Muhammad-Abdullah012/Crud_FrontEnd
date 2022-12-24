@@ -1,4 +1,4 @@
-import Icon, { UserOutlined } from "@ant-design/icons";
+import Icon from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
 function getItem(label, key, icon, children) {
