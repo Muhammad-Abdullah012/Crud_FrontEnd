@@ -147,7 +147,7 @@ export const sendDeleteDataRequest = async (id, dispatch, path) => {
       );
       switch (path) {
         case USERS_PATH:
-          dispatch(deleteOrg(id));
+          dispatch(deleteItem(id));
           break;
         case ORGANIZATIONS_PATH:
           dispatch(deleteOrg(id));
